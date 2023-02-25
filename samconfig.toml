@@ -17,6 +17,11 @@ parallel = true
 capabilities = "CAPABILITY_IAM"
 confirm_changeset = true
 resolve_s3 = true
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-1vm9uv79kjjeb"
+s3_prefix = "warehouse-api"
+region = "us-east-1"
+disable_rollback = true
+image_repositories = []
 
 [default.package]
 [default.package.parameters]
