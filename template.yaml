@@ -15,20 +15,44 @@ Globals:
     TracingEnabled: true
 
 Resources:
-  HelloWorldFunction:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+  WarehouseTable:
+    Type: AWS::DynamoDB::Table
     Properties:
-      CodeUri: hello_world/
+      TableName: warehouse
+      AttributeDefinitions:
+        - AttributeName: ShipmentID
+          AttributeType: S
+      KeySchema:
+        - AttributeName: ShipmentID
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+  WarehouseFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: warehouse/
       Handler: app.app
       Runtime: python3.9
-      Architectures:
-      - x86_64
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref WarehouseTable
       Events:
-        HelloWorld:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+        Test:
+          Type: Api
           Properties:
-            Path: /hello
+            Path: /
             Method: get
+        ListItems:
+          Type: Api
+          Properties:
+            Path: /items
+            Method: get
+        PutItems:
+          Type: Api
+          Properties:
+            Path: /items
+            Method: post
 
   ApplicationResourceGroup:
     Type: AWS::ResourceGroups::Group
@@ -54,12 +78,12 @@ Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
   # Find out more about other implicit resources you can reference within SAM
   # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
-  HelloWorldApi:
-    Description: API Gateway endpoint URL for Prod stage for Hello World function
+  WarehouseApi:
+    Description: API Gateway endpoint URL for Prod stage for warehouse function
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
-  HelloWorldFunction:
-    Description: Hello World Lambda Function ARN
-    Value: !GetAtt HelloWorldFunction.Arn
-  HelloWorldFunctionIamRole:
+  WarehouseFunction:
+    Description: warehouse Lambda Function ARN
+    Value: !GetAtt WarehouseFunction.Arn
+  WarehouseFunctionIamRole:
     Description: Implicit IAM Role created for Hello World function
-    Value: !GetAtt HelloWorldFunctionRole.Arn
+    Value: !GetAtt WarehouseFunctionRole.Arn

@@ -1,3 +1,0 @@
-requests
-flask-lambda-python36
-Werkzeug==2.0.3
