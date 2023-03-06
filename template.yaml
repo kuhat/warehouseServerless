@@ -28,6 +28,19 @@ Resources:
       ProvisionedThroughput:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
+  ShipperTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: shipper
+      AttributeDefinitions:
+        - AttributeName: ShipperID
+          AttributeType: S
+      KeySchema:
+        - AttributeName: ShipperID
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
   WarehouseFunction:
     Type: AWS::Serverless::Function
     Properties:

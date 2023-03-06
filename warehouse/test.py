@@ -1,26 +1,16 @@
 import json
-import boto3
-from flask import request
-from flask_lambda import FlaskLambda
 
-app = FlaskLambda(__name__)
+import boto3
+from flask import Flask
+from flask import request
+from botocore.exceptions import ClientError
+
 ddb = boto3.resource('dynamodb',
                      aws_access_key_id='AKIA4OLUM7OFO3BGXGUZ',
                      aws_secret_access_key='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')
 table1 = ddb.Table('warehouse')
 table2 = ddb.Table('shipper')
-
-
-@app.route('/')
-def index():
-    data = {
-        "message": "This api works!"
-    }
-    return (
-        json.dumps(data),
-        200,
-        {'Content-Type': "application/json"}
-    )
+app = Flask(__name__)
 
 
 @app.route('/items', methods=['GET', 'POST'])
@@ -46,7 +36,7 @@ def put_or_List_itmes():
             return msg, 400, {'Content-Type': "application/json"}
         # Get the items that is already in the db
         oldItemsList = [item['ShipmentID'] for item in table1.scan()['Items']]
-
+        print("oldItemList: " + str(oldItemsList))
         # Get the current shipper
         obj = table2.get_item(Key={'ShipperID': str(id)}).get('Item')
         # if the db doesn't have this shipper, add the new objs into db
@@ -82,6 +72,7 @@ def put_or_List_itmes():
             for newItemid in newItemIDList:
                 if newItemid not in receivedItemList:
                     receivedItemList.append(str(newItemid))
+            print(str(receivedItemList))
             table2.update_item(Key={'ShipperID': str(id)},
                                UpdateExpression="set #Items = :n",
                                ExpressionAttributeNames={"#Items": "Items"},
@@ -90,6 +81,78 @@ def put_or_List_itmes():
             msg = "successfully updated new shipment objects and shipper db"
             errorCode = 200
         except Exception as e:
-            msg = "cannot update entities"
+            msg = "cannot update entities: " + str(e)
             errorCode = 400
         return msg, errorCode, {'Content-Type': "application/json"}
+
+
+def Get():
+    items1 = table1.scan()['Items']
+    print(items1)
+    items2 = table2.scan()['Items']
+    print(items2)
+    newID = max([int(item['ShipperID']) for item in table2.scan()['Items']]) + 1
+    print(newID)
+
+
+def mapping():
+    itemList = table2.get_item(Key={'ShipperID': "1"}).get('Item').get('Items')
+    print(itemList)
+    res = []
+    for id in itemList:
+        item = table1.get_item(Key={'ShipmentID': id})['Item']
+        res.append(item)
+    print(json.dumps(res))
+    pass
+
+
+def insert():
+    objs = [
+        {
+            "Date": "Mar 11, 2022",
+            "WarehouseID": "a908cef7-4c67-40f3-88f7-08a03ba4104e",
+            "ShippingPO": "3f7b2654-052d-4a4e-905f-87f22a3877a9",
+            "ShipmentID": "3",
+            "BoxesRcvd": "5"
+        },
+        {
+            "Date": "Mar 10, 2022",
+            "WarehouseID": "a908cef7-4c67-40f3-88f7-08a03ba4104e",
+            "ShippingPO": "71b720e3-2847-45de-bbe7-8fa099d64632",
+            "ShipmentID": "4",
+            "BoxesRcvd": "2"
+        },
+        {
+            "Date": "Mar 9, 2022",
+            "WarehouseID": "a908cef7-4c67-40f3-88f7-08a03ba4104e",
+            "ShippingPO": "81d06bd2-39e3-427c-9fb3-4e217b9a4d60",
+            "ShipmentID": "5",
+            "BoxesRcvd": "12"
+        }
+    ]
+    try:
+        with table1.batch_writer() as writer:
+            for obj in objs:
+                writer.put_item(Item=obj)
+        print("Success!!")
+    except ClientError as err:
+        print("Couldn't load data into table %s. Here's why: %s: %s", table1.name,
+              err.response['Error']['Code'], err.response['Error']['Message'])
+        raise
+
+
+def update(id, receivedItemList):
+    response = table2.update_item(Key={'ShipperID': str(id)},
+                                  UpdateExpression="set #Items = :n",
+                                  ExpressionAttributeNames={"#Items": "Items"},
+                                  ExpressionAttributeValues={":n": receivedItemList},
+                                  ReturnValues="UPDATED_NEW", )
+    print(response["Attributes"])
+
+
+if __name__ == '__main__':
+    # Get()
+    # mapping()
+    # insert()
+    app.run()
+    # update('1', ['1', '2', '3'])
