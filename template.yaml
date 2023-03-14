@@ -66,6 +66,11 @@ Resources:
           Properties:
             Path: /items
             Method: post
+        GetShipper:
+          Type: Api
+          Properties:
+            Path: /shippers
+            Method: get
 
   ApplicationResourceGroup:
     Type: AWS::ResourceGroups::Group

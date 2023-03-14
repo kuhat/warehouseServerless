@@ -150,9 +150,17 @@ def update(id, receivedItemList):
     print(response["Attributes"])
 
 
+def getShippers():
+    items = table2.scan()['Items']
+    print(items)
+    res = [item.get('ShipperID') for item in items]
+    print(str(res))
+
+
 if __name__ == '__main__':
     # Get()
     # mapping()
     # insert()
-    app.run()
+    # app.run()
     # update('1', ['1', '2', '3'])
+    getShippers()

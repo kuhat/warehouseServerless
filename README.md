@@ -1,5 +1,13 @@
 # warehouse-api
 
+This project is the backend for warehouse-api for CS-519. This application is written in **flask** and sam template which can be
+deployed on AWS using **cloudformation** using infrastructure as code.
+
++ The api address: https://kx473b4cs0.execute-api.us-east-1.amazonaws.com/Prod/
++ Frontend report: https://warehouseserverless-frontend.pages.dev/
++ Swagger address: https://app.swaggerhub.com/apis/1043744621/warehouseAPI/1.0.0#
+
+
 This project contains source code and supporting files for a serverless application that you can deploy with the SAM CLI. It includes the following files and folders.
 
 - hello_world - Code for the application's Lambda function.

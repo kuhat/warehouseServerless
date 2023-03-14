@@ -1,4 +1,6 @@
-import json
+"""
+Api authorizer: randomly generate 16-bit string as token, rotate it automatically every one month
+"""
 import random
 import string
 import threading
